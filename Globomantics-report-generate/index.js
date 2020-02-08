@@ -4,12 +4,13 @@ const StandardFonts = pdf.StandardFonts;
 const rgb = pdf.rgb;
 const AWS = require('aws-sdk');
 const fs = require('fs')
-const ID = '';
-const SECRET = '';
+const Secrets = require('../secrets').secrets
+
+
 
 var s3 = new AWS.S3({
-    accessKeyId: ID,
-    secretAccessKey: SECRET
+    accessKeyId: Secrets.SecretId,
+    secretAccessKey: Secrets.SecretKey
 });
 var BUCKET_NAME = "globomantics-data";
 exports.handler =  (event, context, callback) => {

@@ -1,0 +1,4 @@
+exports.secrets = {
+    SecretId: '----------------',
+    SecretKey : '--------------------'
+}
