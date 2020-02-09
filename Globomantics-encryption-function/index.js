@@ -17,7 +17,7 @@ var BUCKET_NAME = "globomantics-data";
 exports.handler = (event, context, callback) => {
 
         try {
-            const { region, bucket, key } = AmazonS3URI("https://globomantics-data.s3.amazonaws.com/9ArFRH2iNdv6lyN.pdf")
+            const { region, bucket, key } = AmazonS3URI(event.reportFile)
 
             getReportFile(bucket, key).then(data => {
                 console.log('s3 data', data)

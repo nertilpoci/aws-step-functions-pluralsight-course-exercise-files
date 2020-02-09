@@ -1,4 +1,6 @@
 exports.secrets = {
-    SecretId: '----------------',
-    SecretKey : '--------------------'
+    SecretId: '--',
+    SecretKey : '--',
+    EmailUser: '--',
+    EmailPassword: '--'
 }
