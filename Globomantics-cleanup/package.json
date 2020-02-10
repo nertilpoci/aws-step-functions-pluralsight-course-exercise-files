@@ -1,12 +1,11 @@
 {
-  "name": "globomantics-encryption-function",
+  "name": "globomantics-report-generate",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "dependencies": {
     "amazon-s3-uri": "0.0.3",
-    "aws-sdk": "^2.614.0",
-    "crypto": "^1.0.1"
+    "aws-sdk": "^2.614.0"
   },
   "devDependencies": {},
   "scripts": {

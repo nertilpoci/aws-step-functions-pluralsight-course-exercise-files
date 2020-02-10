@@ -1,7 +1,7 @@
 
 const AWS = require('aws-sdk');
 const AmazonS3URI = require('amazon-s3-uri')
-const Secrets = require('../secrets').secrets
+const Secrets = require('./secrets').secrets
 const fs = require('fs')
 const crypto = require('crypto');
 const algorithm = 'aes-256-ctr';
@@ -9,11 +9,12 @@ let key = 'MySuperSecretKey';
 key = crypto.createHash('sha256').update(String(key)).digest('base64').substr(0, 32);
 
 
-var s3 = new AWS.S3({
-    accessKeyId: Secrets.SecretId,
-    secretAccessKey: Secrets.SecretKey
-});
-var BUCKET_NAME = "globomantics-data";
+var s3 = new AWS.S3(
+//     {
+//     accessKeyId: Secrets.SecretId,
+//     secretAccessKey: Secrets.SecretKey
+// }
+);
 exports.handler = (event, context, callback) => {
 
         try {

@@ -1,15 +1,18 @@
 
+
+
 const AWS = require('aws-sdk');
 const AmazonS3URI = require('amazon-s3-uri')
-const Secrets = require('../secrets').secrets
+const Secrets = require('./secrets').secrets
 const fs = require('fs')
 var nodemailer = require('nodemailer');
 
-var s3 = new AWS.S3({
-    accessKeyId: Secrets.SecretId,
-    secretAccessKey: Secrets.SecretKey
-});
-var BUCKET_NAME = "globomantics-data";
+var s3 = new AWS.S3(
+    {
+        accessKeyId: Secrets.SecretId,
+        secretAccessKey: Secrets.SecretKey
+    }
+);
 exports.handler = (event, context, callback) => {
 
     try {
@@ -25,7 +28,7 @@ exports.handler = (event, context, callback) => {
                 }
                 ]
             ).then(result => {
-                console.log('email result', result)
+                callback(null)
             })
         })
 
@@ -85,3 +88,4 @@ function SendEmail(email, subject, body, attachments) {
         });
     })
 }
+
