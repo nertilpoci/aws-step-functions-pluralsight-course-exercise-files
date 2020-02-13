@@ -18,7 +18,6 @@ var s3 = new AWS.S3(
 );
 exports.StartActivity = async  ()=> {
     let activityArn = 'arn:aws:states:us-east-1:049827573258:activity:EncryptionActivity';
-    let workerName = 'EncryptionWorker';
         
     let stepfunction = new AWS.StepFunctions({
         region: 'us-east-1',
@@ -28,7 +27,7 @@ exports.StartActivity = async  ()=> {
 
     while(true){
       try{
-        let taksData =  await getActivityTask(stepfunction,activityArn,workerName);
+        let taksData =  await getActivityTask(stepfunction,activityArn);
         console.log(taksData)
         var payload= JSON.parse(taksData.input)
 
@@ -80,12 +79,11 @@ exports.StartActivity = async  ()=> {
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
-async function  getActivityTask(stepfunction, activityArn, workerName) {
+async function  getActivityTask(stepfunction, activityArn) {
    return new Promise((resolve,reject)=>{
     console.log('Getting Activity Task')
     stepfunction.getActivityTask({
-        activityArn: activityArn,
-        workerName: workerName
+        activityArn: activityArn
     }, (err, data) => {
         if (err) {
             console.log('Error Getting Task Data',err);
