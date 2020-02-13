@@ -4,4 +4,3 @@ exports.secrets = {
     EmailUser: '-----------',
     EmailPassword: '-----------'
 }
-

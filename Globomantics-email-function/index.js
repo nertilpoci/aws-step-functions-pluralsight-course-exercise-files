@@ -13,8 +13,10 @@ var s3 = new AWS.S3(
         secretAccessKey: Secrets.SecretKey
     }
 );
+
 exports.handler = (event, context, callback) => {
 
+ ;
     try {
         const { region, bucket, key } = AmazonS3URI(event.emailFile)
 
@@ -29,7 +31,11 @@ exports.handler = (event, context, callback) => {
                 ]
             ).then(result => {
                 callback(null)
+            }).catch(err => {
+                callback(err)
             })
+        }).then(err => {
+            callback(err);
         })
 
     }
@@ -48,10 +54,12 @@ async function getReportFile(bucket, key) {
                 Key: key
             };
             s3.getObject(params, (err, data) => {
-                resolve(data.Body)
+                if(err) reject(err)
+                else  resolve(data.Body)
             });
         }
         catch (err) {
+         
             reject(err)
         }
     })
