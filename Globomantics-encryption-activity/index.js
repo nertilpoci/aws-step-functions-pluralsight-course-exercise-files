@@ -1,9 +1,6 @@
 const AWS = require('aws-sdk');
-const parser = require('aws-arn-parser');
-
 const AmazonS3URI = require('amazon-s3-uri')
 const Secrets = require('./secrets').secrets
-const fs = require('fs')
 const crypto = require('crypto');
 const algorithm = 'aes-256-ctr';
 let key = 'MySuperSecretKey';
@@ -16,95 +13,103 @@ var s3 = new AWS.S3(
         secretAccessKey: Secrets.SecretKey
     }
 );
-exports.StartActivity = async  ()=> {
-    let activityArn = 'arn:aws:states:us-east-1:049827573258:activity:EncryptionActivity';
-        
+exports.StartActivity = async () => {
+    
     let stepfunction = new AWS.StepFunctions({
         region: 'us-east-1',
         accessKeyId: Secrets.SecretId,
         secretAccessKey: Secrets.SecretKey
     });
+    
+    let activityArn = 'arn:aws:states:us-east-1:049827573258:activity:EncryptionActivity';
 
-    while(true){
-      try{
-        let taksData =  await getActivityTask(stepfunction,activityArn);
-        console.log(taksData)
-        var payload= JSON.parse(taksData.input)
 
-         const { bucket, key } = AmazonS3URI(payload.reportFile)
+    while (true) {
+        try {
+            let taksData = await getActivityTask(stepfunction, activityArn);
+            console.log(taksData)
+            var payload = JSON.parse(taksData.input)
 
-    getReportFile(bucket, key).then(data => {
-        console.log('s3 data', data)
-        var encrypted = encrypt(data);
-        uploadEncryptedFile(encrypted, bucket).then(encryptedUri => {
-        stepfunction.sendTaskSuccess(
-                {
-                    output: JSON.stringify(encryptedUri),
-                    taskToken: taksData.taskToken
-                }, (err, data) => {
-                    if (err) {
-                        console.log('error', err);
-                    } else {
-                        console.log('success', data);
-                    }
-                });
+            const { bucket, key } = AmazonS3URI(payload.reportFile)
 
-        }).catch(err => {
-        stepfunction.sendTaskFailure(
-                {
-                    taskToken: this.taskToken
-                }, (err, data) => {
-                    if (err) {
-                        console.log('error', err);
-                    } else {
-                        console.log('success', data);
-                    }
-                }
+            getReportFile(bucket, key).then(data => {
+                console.log('s3 data', data)
+                var encrypted = encrypt(data);
+                
+                //send hearbeat
+                stepfunction.sendTaskHeartbeat({taskToken: taksData.taskToken})
 
-            )
-        })
-    });
-      }
-      catch(err){
+                uploadEncryptedFile(encrypted, bucket).then(encryptedUri => {
+                    stepfunction.sendTaskSuccess(
+                        {
+                            output: JSON.stringify(encryptedUri),
+                            taskToken: taksData.taskToken
+                        }, 
+                        (err, data) => {
+                            if (err) {
+                                console.log('error', err);
+                            } else {
+                                console.log('success', data);
+                            }
+                        });
 
-      }
-     await sleep(2000)
+                }).catch(err => {
+                    stepfunction.sendTaskFailure(
+                        {
+                            cause: JSON.stringify(err),
+                            taskToken: this.taskToken
+                        }, (err, data) => {
+                            if (err) {
+                                console.log('error', err);
+                            } else {
+                                console.log('success', data);
+                            }
+                        }
+
+                    )
+                })
+            });
+        }
+        catch (err) {
+
+        }
+        await sleep(2000)
     }
 
-   
+
 
 
 
 }
 function sleep(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-  }
-async function  getActivityTask(stepfunction, activityArn) {
-   return new Promise((resolve,reject)=>{
-    console.log('Getting Activity Task')
-    stepfunction.getActivityTask({
-        activityArn: activityArn
-    }, (err, data) => {
-        if (err) {
-            console.log('Error Getting Task Data',err);
-            if (err.code === 'RequestAbortedError') {
-                // In case of abort, close silently
-            } else {
-               reject(err)
+}
+async function getActivityTask(stepfunction, activityArn) {
+    return new Promise((resolve, reject) => {
+        console.log('Getting Activity Task')
+        stepfunction.getActivityTask({
+            activityArn: activityArn
+        }, (err, data) => {
+            if (err) {
+                console.log('Error Getting Task Data', err);
+                if (err.code === 'RequestAbortedError') {
+                    // In case of abort, close silently
+                } else {
+                    reject(err)
+                }
+
+                return;
             }
+            console.log('Task Data', data)
+            if (data.taskToken && typeof (data.taskToken) === 'string' && data.taskToken.length > 1) {
+                resolve(data)
+            }
+            else {
+                resolve(null)
+            }
+        });
 
-            return;
-        }
-        console.log('Task Data', data)
-        if (data.taskToken && typeof (data.taskToken) === 'string' && data.taskToken.length > 1) {
-          resolve(data)
-        }
-        else {
-            resolve(null)
-        }
-    });
-
-   })
+    })
 }
 
 function encrypt(buffer) {
