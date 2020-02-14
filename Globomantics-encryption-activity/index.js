@@ -42,7 +42,9 @@ exports.StartActivity = async () => {
                 uploadEncryptedFile(encrypted, bucket).then(encryptedUri => {
                     stepfunction.sendTaskSuccess(
                         {
-                            output: JSON.stringify(encryptedUri),
+                            output: JSON.stringify({
+                                Payload: encryptedUri
+                            }),
                             taskToken: taksData.taskToken
                         }, 
                         (err, data) => {
